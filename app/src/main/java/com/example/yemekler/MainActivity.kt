@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.yemekler.ui.theme.YemeklerTheme
 import com.example.yemekler.uix.views.Anasayfa
+import com.example.yemekler.uix.views.Sepet
+import com.example.yemekler.uix.views.UrunDetay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +22,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             YemeklerTheme {
-                Anasayfa()
+                UrunDetay()
             }
         }
     }
