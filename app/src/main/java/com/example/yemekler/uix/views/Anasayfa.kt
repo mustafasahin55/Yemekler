@@ -40,6 +40,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -71,13 +73,14 @@ import com.example.yemekler.ui.theme.mid
 import com.example.yemekler.ui.theme.orange
 import com.example.yemekler.ui.theme.regular
 import com.example.yemekler.ui.theme.semiBold
+import com.example.yemekler.uix.viewModels.AnasayfaViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 
-@OptIn(ExperimentalMaterial3Api::class , ExperimentalPagerApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Anasayfa()
+fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 {
 	val activity = (LocalContext.current as Activity)
 	val yemekTurleri = remember { mutableListOf<yemekTurleri>() }
@@ -107,6 +110,13 @@ fun Anasayfa()
 	yemekler.add(yemek1)
 	yemekler.add(yemek2)
 
+	val tumYemekler = anasayfaViewModel.tumYemeklerListesi.observeAsState(listOf())
+	LaunchedEffect(key1 = true) {
+		anasayfaViewModel.tumYemekleriGetir()
+		print(tumYemekler)
+
+
+	}
 
 
 	Scaffold(bottomBar = { BottomBar() } ,
@@ -144,11 +154,11 @@ fun Anasayfa()
 						horizontalArrangement = Arrangement.SpaceBetween ,
 						modifier = Modifier
 
-							.padding(start = 30.dp , end = 0.dp)
-							.background(Color(0xFFFCFCFD) , RoundedCornerShape(12.dp))
+							.padding(start = 30.dp, end = 0.dp)
+							.background(Color(0xFFFCFCFD), RoundedCornerShape(12.dp))
 							.border(
-								1.dp ,
-								shape = RoundedCornerShape(12.dp) ,
+								1.dp,
+								shape = RoundedCornerShape(12.dp),
 								color = Color(0xFFEFEFEF)
 							)
 							.width(280.dp)
@@ -200,7 +210,7 @@ fun Anasayfa()
 						painter = painter1 ,
 						contentDescription = "" ,
 						modifier = Modifier
-							.size(120.dp , 50.dp)
+							.size(120.dp, 50.dp)
 							.padding(end = 10.dp)
 					)
 
@@ -261,7 +271,7 @@ fun Anasayfa()
 						var resim = restoran[it]
 						Image(
 							modifier = Modifier
-								.size(330.dp , height = 280.dp)
+								.size(330.dp, height = 280.dp)
 								.clipToBounds()
 								.padding(end = 0.dp) ,
 							painter = painterResource(
@@ -294,7 +304,7 @@ fun Anasayfa()
 
 				LazyVerticalGrid(
 					columns = GridCells.Fixed(2) , modifier = Modifier
-						.padding(end=30.dp)
+						.padding(end = 30.dp)
 						.height((100 * yemekler.count()).dp)
 				) {
 
@@ -327,7 +337,7 @@ fun BottomBar()
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
-					.padding(start = 10.dp , end = 10.dp) ,
+					.padding(start = 10.dp, end = 10.dp) ,
 				verticalAlignment = Alignment.CenterVertically ,
 				horizontalArrangement = Arrangement.SpaceBetween
 			) {
@@ -435,10 +445,10 @@ fun FoodCategoryCard(name : String , svgPath : String , isSelected : Boolean , o
 
 	Column(
 		modifier = Modifier
-			.padding(start = 10.dp , end = 10.dp)
+			.padding(start = 10.dp, end = 10.dp)
 			.width(70.dp)
 			.height(120.dp)
-			.background(backgroundColor , RoundedCornerShape(80.dp))
+			.background(backgroundColor, RoundedCornerShape(80.dp))
 			.padding(vertical = 4.dp)
 			.clickable {
 				onClick.invoke()
@@ -480,7 +490,7 @@ fun FoodCard()
 	Card(
 		shape = RoundedCornerShape(16.dp) ,
 		modifier = Modifier
-			.padding(start = 30.dp , top = 0.dp)
+			.padding(start = 30.dp, top = 0.dp)
 			.height(200.dp)
 			.width(160.dp) ,
 		elevation = 4.dp
@@ -515,11 +525,11 @@ fun FoodCard()
 						.align(Alignment.TopStart) // Sol üstte hizala
 						.padding(8.dp)
 						.background(
-							color = Color.Transparent ,
+							color = Color.Transparent,
 							shape = RoundedCornerShape(12.dp)
 						)
-						.padding(horizontal = 8.dp , vertical = 4.dp)
-						.border(1.dp , Color.LightGray , RoundedCornerShape(10.dp))
+						.padding(horizontal = 8.dp, vertical = 4.dp)
+						.border(1.dp, Color.LightGray, RoundedCornerShape(10.dp))
 				)
 
 				// Favori butonu
@@ -540,11 +550,11 @@ fun FoodCard()
 						.align(Alignment.BottomStart) // Sol altta hizala
 						.padding(start = 18.dp)
 						.background(
-							color = Color.Transparent ,
+							color = Color.Transparent,
 							shape = RoundedCornerShape(12.dp)
 						)
-						.padding(horizontal = 8.dp , vertical = 4.dp)
-						.border(1.dp , Color.LightGray , RoundedCornerShape(10.dp))
+						.padding(horizontal = 8.dp, vertical = 4.dp)
+						.border(1.dp, Color.LightGray, RoundedCornerShape(10.dp))
 				) {
 					Icon(
 						imageVector = Icons.Default.Star ,
