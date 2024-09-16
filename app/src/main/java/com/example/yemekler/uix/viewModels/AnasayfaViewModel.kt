@@ -1,5 +1,6 @@
 package com.example.yemekler.uix.viewModels
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.yemekler.data.entity.yemek
@@ -22,6 +23,7 @@ class AnasayfaViewModel@Inject constructor(var yemeklerRepo:YemeklerRepository):
     fun tumYemekleriGetir(){
         CoroutineScope(Dispatchers.Main).launch {
             tumYemeklerListesi.value = yemeklerRepo.tumYemekleriGetir()
+            Log.e("aVM","{${yemeklerRepo.tumYemekleriGetir()}}")
         }
     }
 

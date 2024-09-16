@@ -77,6 +77,8 @@ import com.example.yemekler.uix.viewModels.AnasayfaViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import com.google.gson.Gson
+import com.skydoves.landscapist.glide.GlideImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,13 +112,12 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 	yemekler.add(yemek1)
 	yemekler.add(yemek2)
 
-	val tumYemekler = anasayfaViewModel.tumYemeklerListesi.observeAsState(listOf())
+	val tumYemeklerListe = anasayfaViewModel.tumYemeklerListesi.observeAsState(initial = emptyList())
 	LaunchedEffect(key1 = true) {
 		anasayfaViewModel.tumYemekleriGetir()
-		print(tumYemekler)
-
 
 	}
+
 
 
 	Scaffold(bottomBar = { BottomBar() } ,
@@ -308,9 +309,9 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 						.height((100 * yemekler.count()).dp)
 				) {
 
-					items(yemekler.size , itemContent = {
-						val yemek = yemekler[it]
-						FoodCard()
+					items(tumYemeklerListe.value.size , itemContent = {
+						var t = tumYemeklerListe.value[it]
+						FoodCard(t)
 
 
 					})
@@ -485,7 +486,7 @@ fun FoodCategoryCard(name : String , svgPath : String , isSelected : Boolean , o
 }
 
 @Composable
-fun FoodCard()
+fun FoodCard(y: yemek)
 {
 	Card(
 		shape = RoundedCornerShape(16.dp) ,
@@ -509,16 +510,13 @@ fun FoodCard()
 
 			) {
 				// Arka plan görseli
-				Image(
-					painter = painterResource(id = R.drawable.ayran) , // Görsel kaynağını ayarla
-					contentDescription = null ,
-					contentScale = ContentScale.Crop ,
-					modifier = Modifier.align(Alignment.Center)
-				)
+				val url = "http://kasimadalan.pe.hu/yemekler/resimler/${y.yemek_resim_adi}"
+				GlideImage(imageModel = url,modifier = Modifier.align(Alignment.Center),contentScale = ContentScale.Crop ,)
+
 
 				// Fiyat etiketi
 				Text(
-					text = "$5.50" ,
+					text = "${y.yemek_fiyat}" ,
 					color = Color.Red ,
 
 					modifier = Modifier
@@ -569,7 +567,7 @@ fun FoodCard()
 				}
 			}
 
-			Text(text = "Ayran")
+			Text(text = "${y.yemek_adi}")
 
 		}
 	}
