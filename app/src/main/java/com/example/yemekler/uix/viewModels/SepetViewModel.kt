@@ -21,18 +21,36 @@ class SepetViewModel @Inject constructor(var yemeklerRepo : YemeklerRepository) 
 	var sepetYemeklerListesi = MutableLiveData<List<sYemekler>>()
 
 
-
+	init
+	{
+		sepetiGetir("mustafa")
+	}
 
 	fun sepetiGetir(kullanici_adi : String)
 	{
 		CoroutineScope(Dispatchers.Main).launch {
-			try
-			{
+
 				sepetYemeklerListesi.value = yemeklerRepo.sepetiGetir(kullanici_adi)
-			} catch (e : Exception) { }
+
 
 		}
 
+	}
+
+	fun sil(sepet_yemek_id:Int,kullanici_adi:String){
+		CoroutineScope(Dispatchers.Main).launch {
+			yemeklerRepo.sil(sepet_yemek_id,kullanici_adi)
+			sepetiGetir("mustafa")
+
+		}
+	}
+
+	fun sepeteEkle(yemek_adi:String, yemek_resim_adi:String, yemek_fiyat:Int, yemek_siparis_adet:Int, kullanici_adi:String){
+		CoroutineScope(Dispatchers.Main).launch {
+			yemeklerRepo.sepeteEkle(yemek_adi, yemek_resim_adi, yemek_fiyat, yemek_siparis_adet, kullanici_adi)
+			sepetiGetir("mustafa")
+
+		}
 	}
 
 

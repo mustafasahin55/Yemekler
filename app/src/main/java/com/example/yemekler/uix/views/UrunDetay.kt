@@ -2,6 +2,7 @@ package com.example.yemekler.uix.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,10 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +62,7 @@ import com.example.yemekler.ui.theme.mid
 import com.example.yemekler.ui.theme.orange
 import com.example.yemekler.ui.theme.regular
 import com.example.yemekler.ui.theme.semiBold
+import com.example.yemekler.uix.viewModels.SepetViewModel
 import com.example.yemekler.uix.viewModels.UrunDetayViewModel
 import com.skydoves.landscapist.glide.GlideImage
 
@@ -64,7 +70,9 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun UrunDetay(y:yemek,urunDetayViewModel : UrunDetayViewModel)
 {
-
+	var adet = remember {
+		mutableIntStateOf(1)
+	}
 	Scaffold { paddingValues ->
 
 
@@ -79,7 +87,9 @@ fun UrunDetay(y:yemek,urunDetayViewModel : UrunDetayViewModel)
 
 				val url = "http://kasimadalan.pe.hu/yemekler/resimler/${y.yemek_resim_adi}"
 
-				GlideImage(imageModel = url,modifier = Modifier.align(Alignment.Center).size(180.dp),contentScale = ContentScale.Crop ,)
+				GlideImage(imageModel = url,modifier = Modifier
+					.align(Alignment.Center)
+					.size(180.dp),contentScale = ContentScale.Crop ,)
 				// Sol üst köşeye geri butonu
 				IconButton(
 					onClick = { /* Geri butonuna tıklama işlemi */ } ,
@@ -170,7 +180,7 @@ fun UrunDetay(y:yemek,urunDetayViewModel : UrunDetayViewModel)
 					fontSize = 30.sp
 				)
 				Spacer(modifier = Modifier.weight(1f))
-				QuantitySelector()
+				QuantitySelector(adet)
 			}
 
 			Spacer(modifier = Modifier.height(8.dp))
@@ -201,14 +211,14 @@ fun UrunDetay(y:yemek,urunDetayViewModel : UrunDetayViewModel)
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			AddToCartButton(y,urunDetayViewModel)
+			AddToCartButton(y,urunDetayViewModel,adet)
 		}
 	}
 }
 
 @Composable
-fun QuantitySelector()
-{
+fun QuantitySelector(adet: MutableState<Int>)
+{   var a = adet
 	Row(
 		verticalAlignment = Alignment.CenterVertically
 	) {
@@ -230,15 +240,29 @@ fun QuantitySelector()
 			painter = painter2 ,
 			contentDescription = "" ,
 			modifier = Modifier.size(30.dp)
+				.clickable {
+					if(adet.value>1){
+						adet.value -= 1
+					}else{
+						adet.value = 1
+					}
+
+				}
 		)
-		Text(text = "1" , modifier = Modifier.padding(start = 10.dp , end = 10.dp))
+		Text(text = "${adet.value}" , modifier = Modifier.padding(start = 10.dp , end = 10.dp))
 		Image(
 			painter = painter ,
 			contentDescription = "" ,
 			modifier = Modifier.size(30.dp)
+				.clickable {
+					adet.value += 1
+
+				}
+
 		)
 		Spacer(modifier = Modifier.width(20.dp))
 	}
+
 }
 
 @Composable
@@ -285,11 +309,15 @@ fun AddOnOption(name : String , price : String , isSelected : Boolean)
 }
 
 @Composable
-fun AddToCartButton(y:yemek,urunDetayViewModel : UrunDetayViewModel)
+fun AddToCartButton(y:yemek,urunDetayViewModel : UrunDetayViewModel,adet: MutableState<Int>)
 {
 	Button(
 		onClick = {
-			urunDetayViewModel.sepeteEkle(y.yemek_adi,y.yemek_resim_adi,y.yemek_fiyat,1,"mustafa")
+
+
+
+			urunDetayViewModel.sepeteEkle(y.yemek_adi,y.yemek_resim_adi,y.yemek_fiyat,adet.value,"mustafa")
+
 
 
 
@@ -304,7 +332,9 @@ fun AddToCartButton(y:yemek,urunDetayViewModel : UrunDetayViewModel)
 		Row(
 			verticalAlignment = Alignment.CenterVertically ,
 			horizontalArrangement = Arrangement.Start ,
-			modifier = Modifier.fillMaxWidth(1f).padding(all = 0.dp)
+			modifier = Modifier
+				.fillMaxWidth(1f)
+				.padding(all = 0.dp)
 		) {
 			// Yuvarlak simge
 			Box(

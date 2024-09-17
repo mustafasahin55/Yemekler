@@ -1,10 +1,9 @@
 package com.example.yemekler.uix.views
 
-import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,17 +33,15 @@ import androidx.compose.material.TextField
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,74 +55,77 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.example.yemekler.R
+import com.example.yemekler.data.entity.sYemekler
 import com.example.yemekler.ui.theme.gray20
 import com.example.yemekler.ui.theme.gray50
-import com.example.yemekler.ui.theme.gray80
 import com.example.yemekler.ui.theme.mid
-import com.example.yemekler.ui.theme.orange
 import com.example.yemekler.ui.theme.orange80
 import com.example.yemekler.uix.viewModels.SepetViewModel
-import java.util.stream.IntStream.range
 
 @Composable
-fun Sepet(sepetViewModel: SepetViewModel) {
+fun Sepet(sepetViewModel : SepetViewModel)
+{
 
-	var sepetYemeklerListe = sepetViewModel.sepetYemeklerListesi.observeAsState(initial = emptyList())
+	var sepetYemeklerListe =
+		sepetViewModel.sepetYemeklerListesi.observeAsState(initial = emptyList())
 
 	LaunchedEffect(true) {
 		sepetViewModel.sepetiGetir("mustafa")
 
 
-
 	}
+	val toplam = sepetYemeklerListe.value.sumOf { it.yemek_fiyat * it.yemek_siparis_adet }
 
-	Scaffold(topBar = { topBarSepet() }) {paddingValues->
+	Scaffold(topBar = { topBarSepet() }) { paddingValues ->
 
 		Column(
 			modifier = Modifier
 				.fillMaxSize()
 				.padding(paddingValues)
-				.padding(start = 20.dp , end = 20.dp),
-			horizontalAlignment = Alignment.CenterHorizontally,
+				.padding(start = 20.dp , end = 20.dp) ,
+			horizontalAlignment = Alignment.CenterHorizontally ,
 			verticalArrangement = Arrangement.Bottom
 		) {
 
 
-
-
 			LazyColumn(modifier = Modifier.height(250.dp)) {
 
-
-
-/*
-				items(2 , itemContent = {
-
-					//val sepetYemek = sepetYemeklerListe.value[it]
-					//Log.e("sepetYemeklerListe", sepetYemek.yemek_adi)
-
-					CartItem(
-						imageUrl = "http://kasimadalan.pe.hu/yemekler/resimler/${sepetYemek.yemek_resim_adi}.png", // Example image URL
-						itemName = sepetYemek.yemek_adi ,
-						description = "Spicy chicken, beef",
-						price = "${sepetYemek.yemek_fiyat}₺",
-						quantity = sepetYemek.yemek_siparis_adet
-					)
-					Div()
-
-
-
-				})
-				*/
-
-
-
+				if (sepetYemeklerListe.value.isEmpty())
+				{
+					item {
+						Text(text = "Sepetiniz Boş")
+					}
 				}
+				else
+				{
+					items(sepetYemeklerListe.value.size , itemContent = {
+
+						val sepetYemek = sepetYemeklerListe.value[it]
+						//Log.e("sepetYemeklerListe", sepetYemek.yemek_adi)
+
+
+						CartItem(
+							imageUrl = "http://kasimadalan.pe.hu/yemekler/resimler/${sepetYemek.yemek_resim_adi}" ,
+							itemName = sepetYemek.yemek_adi ,
+							description = "Spicy chicken, beef" ,
+							price = "${sepetYemek.yemek_fiyat}₺" ,
+							quantity = sepetYemek.yemek_siparis_adet ,
+							sepet_yemek_id = sepetYemek.sepet_yemek_id ,
+							sepetViewModel ,
+							sepetYemek
+
+						)
+						Div()
+
+
+					})
+				}
+
 
 			}
 
+
 			// Cart Items
-
-
 
 
 			Spacer(modifier = Modifier.height(20.dp))
@@ -137,58 +137,72 @@ fun Sepet(sepetViewModel: SepetViewModel) {
 
 			// Price Breakdown
 			PriceBreakdown(
-				subtotal = "$27.30",
-				taxAndFees = "$5.30",
-				delivery = "$1.00",
-				total = "$33.60"
+				subtotal = "₺$toplam " ,
+				taxAndFees = "₺${toplam * 0.1}" ,
+				delivery = "₺24.5" ,
+				total = "₺${toplam  + 24.5}"
 			)
-
 
 
 			// Checkout Button
 			Button(
-				onClick = { /* Handle checkout */ },
+				onClick = { /* Handle checkout */ } ,
 				modifier = Modifier
 					.height(60.dp)
 					.width(275.dp)
-					.clip(RoundedCornerShape(30.dp)),
+					.clip(RoundedCornerShape(30.dp)) ,
 				colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF7E47))
 			) {
-				Text(text = "CHECKOUT", color = Color.White, fontSize = 16.sp)
+				Text(text = "CHECKOUT" , color = Color.White , fontSize = 16.sp)
 			}
 		}
 
 	}
-
+}
 
 
 @Composable
-fun CartItem(imageUrl: String, itemName: String, description: String, price: String, quantity: Int) {
+fun CartItem(
+	imageUrl : String ,
+	itemName : String ,
+	description : String ,
+	price : String ,
+	quantity : Int ,
+	sepet_yemek_id : Int ,
+	sepetViewModel : SepetViewModel ,
+	sepetYemek : sYemekler
+)
+{
+
 	Row(
-		verticalAlignment = Alignment.CenterVertically,
+		verticalAlignment = Alignment.CenterVertically ,
 		modifier = Modifier.fillMaxWidth()
 	) {
 		Image(
-			painter = rememberAsyncImagePainter(imageUrl),
-			contentDescription = itemName,
+			painter = rememberAsyncImagePainter(imageUrl) ,
+			contentDescription = itemName ,
 			modifier = Modifier
 				.size(60.dp)
 				.clip(RoundedCornerShape(10.dp))
 		)
 
 		Spacer(modifier = Modifier.width(16.dp))
-		Box(modifier =Modifier.fillMaxWidth() ){
+		Box(modifier = Modifier.fillMaxWidth()) {
 			Column(
 
 			) {
-				Text(text = itemName, fontWeight = FontWeight.Bold)
-				Text(text = description, color = Color.Gray)
-				Text(text = price, color = Color(0xFFFF7E47), fontWeight = FontWeight.Bold)
+				Text(text = itemName , fontWeight = FontWeight.Bold)
+				Text(text = description , color = Color.Gray)
+				Text(text = price , color = Color(0xFFFF7E47) , fontWeight = FontWeight.Bold)
 			}
 
-			Row(modifier = Modifier
-				.align(Alignment.BottomEnd)
-				.padding(top = 20.dp , end = 20.dp), horizontalArrangement = Arrangement.spacedBy(0.dp), verticalAlignment = Alignment.CenterVertically){
+			Row(
+				modifier = Modifier
+					.align(Alignment.BottomEnd)
+					.padding(top = 20.dp , end = 20.dp) ,
+				horizontalArrangement = Arrangement.spacedBy(0.dp) ,
+				verticalAlignment = Alignment.CenterVertically
+			) {
 
 				val painter = rememberAsyncImagePainter(
 					model = ImageRequest.Builder(LocalContext.current)
@@ -206,36 +220,69 @@ fun CartItem(imageUrl: String, itemName: String, description: String, price: Str
 
 				Image(
 					painter = painter2 ,
-					contentDescription = "",
-					modifier = Modifier.size(20.dp)
+					contentDescription = "" ,
+					modifier = Modifier
+						.size(20.dp)
+						.clickable {
+							if (quantity >= 2){
+							sepetViewModel.sepeteEkle(
+								yemek_adi = sepetYemek.yemek_adi ,
+								yemek_resim_adi = sepetYemek.yemek_resim_adi ,
+								yemek_fiyat = sepetYemek.yemek_fiyat ,
+								yemek_siparis_adet = - 1 ,
+								kullanici_adi = "mustafa"
+							)}
+							if (quantity<2){
+								sepetViewModel.sil(sepet_yemek_id , "mustafa")
+
+							}
+						}
 				)
-				Text(text = quantity.toString(), modifier = Modifier.padding(start = 10.dp , end = 10.dp))
+				Text(
+					text = quantity.toString() ,
+					modifier = Modifier.padding(start = 10.dp , end = 10.dp)
+				)
 				Image(
 					painter = painter ,
-					contentDescription = "",
-					modifier = Modifier.size(20.dp)
+					contentDescription = "" ,
+					modifier = Modifier
+						.size(20.dp)
+						.clickable {
+							sepetViewModel.sepeteEkle(
+								yemek_adi = sepetYemek.yemek_adi ,
+								yemek_resim_adi = sepetYemek.yemek_resim_adi ,
+								yemek_fiyat = sepetYemek.yemek_fiyat ,
+								yemek_siparis_adet = 1 ,
+								kullanici_adi = "mustafa"
+							)
+						}
 				)
 
 			}
 
-			IconButton(onClick = { /*TODO*/ },modifier = Modifier
-				.align(Alignment.TopEnd)
-				.size(60.dp)
-				.padding(bottom = 40.dp , end = 0.dp)) {
-				Icon(painter = painterResource(id = R.drawable.delete) , contentDescription = "", tint = orange80 )
+			IconButton(
+				onClick = { sepetViewModel.sil(sepet_yemek_id , "mustafa") } , modifier = Modifier
+					.align(Alignment.TopEnd)
+					.size(60.dp)
+					.padding(bottom = 40.dp , end = 0.dp)
+			) {
+				Icon(
+					painter = painterResource(id = R.drawable.delete) ,
+					contentDescription = "" ,
+					tint = orange80
+				)
 			}
-
 
 
 		}
-
 
 
 	}
 }
 
 @Composable
-fun PromoCodeSection() {
+fun PromoCodeSection()
+{
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
@@ -243,94 +290,98 @@ fun PromoCodeSection() {
 
 			.height(64.dp)
 			.border(1.dp , gray50 , shape = RoundedCornerShape(60.dp))
-			.background(Color.Transparent),
-		verticalAlignment = Alignment.CenterVertically,
+			.background(Color.Transparent) ,
+		verticalAlignment = Alignment.CenterVertically ,
 		horizontalArrangement = Arrangement.spacedBy(8.dp)
 
 	) {
 		TextField(
-			value = "",
-			onValueChange = {},
-			placeholder = { Text("Promo Code") },
+			value = "" ,
+			onValueChange = {} ,
+			placeholder = { Text("Promo Code") } ,
 			modifier = Modifier
 				.weight(1f)
 				.height(56.dp)
-				.clip(RoundedCornerShape(12.dp)),
-			shape = RoundedCornerShape(12.dp),
+				.clip(RoundedCornerShape(12.dp)) ,
+			shape = RoundedCornerShape(12.dp) ,
 			colors = TextFieldDefaults.textFieldColors(
-				backgroundColor = Color.Transparent,
-				focusedIndicatorColor = Color.Transparent,
+				backgroundColor = Color.Transparent ,
+				focusedIndicatorColor = Color.Transparent ,
 				unfocusedIndicatorColor = Color.Transparent
-			),
+			) ,
 			singleLine = true
 		)
 		Button(
-			onClick = { /* Apply Promo Code action */ },
+			onClick = { /* Apply Promo Code action */ } ,
 			modifier = Modifier
 				.padding(end = 10.dp)
 				.height(50.dp)
 				.width(100.dp)
-				.clip(RoundedCornerShape(50.dp)),
+				.clip(RoundedCornerShape(50.dp)) ,
 			colors = ButtonDefaults.buttonColors(
 				backgroundColor = Color(0xFFFF754C) // Orange-ish color
 			)
 		) {
-			Text("Apply", color = Color.White)
+			Text("Apply" , color = Color.White)
 		}
 	}
 }
 
 
 @Composable
-fun PriceBreakdown(subtotal: String, taxAndFees: String, delivery: String, total: String) {
+fun PriceBreakdown(subtotal : String , taxAndFees : String , delivery : String , total : String)
+{
 	Column {
-		BreakdownRow(label = "Subtotal", amount = subtotal)
+		BreakdownRow(label = "Subtotal" , amount = subtotal)
 
 		Div()
-		BreakdownRow(label = "Tax and Fees", amount = taxAndFees)
+		BreakdownRow(label = "Tax and Fees" , amount = taxAndFees)
 		Div()
-		BreakdownRow(label = "Delivery", amount = delivery)
+		BreakdownRow(label = "Delivery" , amount = delivery)
 		Div()
-		BreakdownRow(label = "Total", amount = total, isTotal = true)
+		BreakdownRow(label = "Total" , amount = total , isTotal = true)
 		Div()
 	}
 }
 
 @Composable
-fun BreakdownRow(label: String, amount: String, isTotal: Boolean = false) {
+fun BreakdownRow(label : String , amount : String , isTotal : Boolean = false)
+{
 	Row(
-		modifier = Modifier.fillMaxWidth(),
+		modifier = Modifier.fillMaxWidth() ,
 		horizontalArrangement = Arrangement.SpaceBetween
 	) {
 		Text(
-			text = label,
-			fontFamily = mid,
-			color = Color.Black,
+			text = label ,
+			fontFamily = mid ,
+			color = Color.Black ,
 			fontSize = 19.sp
 		)
 		Row {
 			Text(
-				text = amount,
-				fontFamily = mid,
-				color =Color.Black,
+				text = amount ,
+				fontFamily = mid ,
+				color = Color.Black ,
 				fontSize = 19.sp
 			)
 			Text(
-				text = " USD",
-				fontFamily = mid,
-				color = Color.Gray,
+				text = " TRY" ,
+				fontFamily = mid ,
+				color = Color.Gray ,
 				fontSize = 16.sp
 			)
 		}
 
 	}
 }
+
 @Composable
-fun Div(){
+fun Div()
+{
 	Divider(
-		color = gray20,
-		thickness = 1.dp, // Çizginin kalınlığı
-		modifier = Modifier.padding(horizontal = 0.dp, vertical = 14.dp) // İsteğe bağlı boşluk
+		color = gray20 ,
+		thickness = 1.dp , // Çizginin kalınlığı
+		modifier = Modifier.padding(horizontal = 0.dp , vertical = 14.dp) // İsteğe bağlı boşluk
 	)
 }
 
@@ -342,20 +393,20 @@ fun topBarSepet()
 
 		// Top Section (Back button and Title)
 		Row(
-			verticalAlignment = Alignment.CenterVertically,
+			verticalAlignment = Alignment.CenterVertically ,
 
 			modifier = Modifier.fillMaxWidth()
 		) {
 			IconButton(onClick = { /* Handle back navigation */ }) {
 				Icon(
-					imageVector = Icons.Default.ArrowBack,
+					imageVector = Icons.Default.ArrowBack ,
 					contentDescription = "Back"
 				)
 			}
 			Text(
-				text = "Cart",
-				fontSize = 24.sp,
-				fontWeight = FontWeight.Bold,
+				text = "Cart" ,
+				fontSize = 24.sp ,
+				fontWeight = FontWeight.Bold ,
 				modifier = Modifier
 					.weight(1f)
 					.padding(start = 8.dp)
