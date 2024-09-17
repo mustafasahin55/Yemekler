@@ -46,6 +46,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.example.yemekler.R
+import com.example.yemekler.data.entity.yemek
 import com.example.yemekler.ui.theme.dark50
 import com.example.yemekler.ui.theme.dark80
 import com.example.yemekler.ui.theme.gray
@@ -56,10 +57,12 @@ import com.example.yemekler.ui.theme.mid
 import com.example.yemekler.ui.theme.orange
 import com.example.yemekler.ui.theme.regular
 import com.example.yemekler.ui.theme.semiBold
+import com.example.yemekler.uix.viewModels.UrunDetayViewModel
+import com.skydoves.landscapist.glide.GlideImage
 
 
 @Composable
-fun UrunDetay()
+fun UrunDetay(y:yemek,urunDetayViewModel : UrunDetayViewModel)
 {
 
 	Scaffold { paddingValues ->
@@ -72,17 +75,11 @@ fun UrunDetay()
 				.padding(16.dp) , verticalArrangement = Arrangement.Top ,
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
-			Box() {
-				Image(
-					painter = painterResource(R.drawable.ayran) ,
-					contentDescription = "Ground Beef Tacos" ,
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(200.dp)
-						.align(Alignment.Center)
-						.clip(RoundedCornerShape(8.dp)) ,
+			Box(modifier = Modifier.fillMaxWidth()) {
 
-					)
+				val url = "http://kasimadalan.pe.hu/yemekler/resimler/${y.yemek_resim_adi}"
+
+				GlideImage(imageModel = url,modifier = Modifier.align(Alignment.Center).size(180.dp),contentScale = ContentScale.Crop ,)
 				// Sol üst köşeye geri butonu
 				IconButton(
 					onClick = { /* Geri butonuna tıklama işlemi */ } ,
@@ -125,7 +122,7 @@ fun UrunDetay()
 				modifier = Modifier.fillMaxWidth()
 			) {
 				Text(
-					text = "Ground Beef Tacos" ,
+					text = "${y.yemek_adi}" ,
 					fontSize = 30.sp ,
 					fontFamily = semiBold ,
 					color = dark80 ,
@@ -166,7 +163,7 @@ fun UrunDetay()
 				modifier = Modifier.fillMaxWidth()
 			) {
 				Text(
-					text = "$9.50" ,
+					text = "${y.yemek_fiyat }₺" ,
 
 					color = orange ,
 					fontFamily = semiBold ,
@@ -204,7 +201,7 @@ fun UrunDetay()
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			AddToCartButton()
+			AddToCartButton(y,urunDetayViewModel)
 		}
 	}
 }
@@ -288,10 +285,16 @@ fun AddOnOption(name : String , price : String , isSelected : Boolean)
 }
 
 @Composable
-fun AddToCartButton()
+fun AddToCartButton(y:yemek,urunDetayViewModel : UrunDetayViewModel)
 {
 	Button(
-		onClick = { /* Buton tıklama işlemi */ } ,
+		onClick = {
+			urunDetayViewModel.sepeteEkle(y.yemek_adi,y.yemek_resim_adi,y.yemek_fiyat,1,"mustafa")
+
+
+
+
+		} ,
 		shape = RoundedCornerShape(36.dp) , // Yuvarlak kenarlar
 		colors = ButtonDefaults.buttonColors(backgroundColor = orange) , // Buton turuncu rengi
 		modifier = Modifier

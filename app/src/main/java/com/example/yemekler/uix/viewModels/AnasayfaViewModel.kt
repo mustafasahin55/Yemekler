@@ -22,8 +22,12 @@ class AnasayfaViewModel@Inject constructor(var yemeklerRepo:YemeklerRepository):
 
     fun tumYemekleriGetir(){
         CoroutineScope(Dispatchers.Main).launch {
-            tumYemeklerListesi.value = yemeklerRepo.tumYemekleriGetir()
-            Log.e("aVM","{${yemeklerRepo.tumYemekleriGetir()}}")
+
+            try
+            {
+                tumYemeklerListesi.value = yemeklerRepo.tumYemekleriGetir()
+
+            }catch (e:Exception){}
         }
     }
 

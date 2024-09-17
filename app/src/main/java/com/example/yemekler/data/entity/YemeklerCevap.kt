@@ -1,3 +1,3 @@
 package com.example.yemekler.data.entity
 
-class YemeklerCevap(var yemekler: List<yemek>, var succes: Int)
+data class YemeklerCevap(var yemekler: List<yemek>, var success: Int)

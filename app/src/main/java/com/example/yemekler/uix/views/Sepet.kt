@@ -1,6 +1,7 @@
 package com.example.yemekler.uix.views
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,6 +43,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,9 +64,20 @@ import com.example.yemekler.ui.theme.gray80
 import com.example.yemekler.ui.theme.mid
 import com.example.yemekler.ui.theme.orange
 import com.example.yemekler.ui.theme.orange80
+import com.example.yemekler.uix.viewModels.SepetViewModel
+import java.util.stream.IntStream.range
 
 @Composable
-fun Sepet() {
+fun Sepet(sepetViewModel: SepetViewModel) {
+
+	var sepetYemeklerListe = sepetViewModel.sepetYemeklerListesi.observeAsState(initial = emptyList())
+
+	LaunchedEffect(true) {
+		sepetViewModel.sepetiGetir("mustafa")
+
+
+
+	}
 
 	Scaffold(topBar = { topBarSepet() }) {paddingValues->
 
@@ -80,49 +94,30 @@ fun Sepet() {
 
 
 			LazyColumn(modifier = Modifier.height(250.dp)) {
-				item{
+
+
+
+/*
+				items(2 , itemContent = {
+
+					//val sepetYemek = sepetYemeklerListe.value[it]
+					//Log.e("sepetYemeklerListe", sepetYemek.yemek_adi)
+
 					CartItem(
-						imageUrl = "http://kasimadalan.pe.hu/yemekler/resimler/ayran.png", // Example image URL
-						itemName = "Red n hot pizza",
+						imageUrl = "http://kasimadalan.pe.hu/yemekler/resimler/${sepetYemek.yemek_resim_adi}.png", // Example image URL
+						itemName = sepetYemek.yemek_adi ,
 						description = "Spicy chicken, beef",
-						price = "$15.30",
-						quantity = 2
+						price = "${sepetYemek.yemek_fiyat}₺",
+						quantity = sepetYemek.yemek_siparis_adet
 					)
 					Div()
 
-				}
 
-				item{
-					CartItem(
-						imageUrl = "http://kasimadalan.pe.hu/yemekler/resimler/ayran.png", // Example image URL
-						itemName = "Red n hot pizza",
-						description = "Spicy chicken, beef",
-						price = "$15.30",
-						quantity = 2
-					)
-					Div()
 
-				}
-				item{
-					CartItem(
-						imageUrl = "http://kasimadalan.pe.hu/yemekler/resimler/ayran.png", // Example image URL
-						itemName = "Red n hot pizza",
-						description = "Spicy chicken, beef",
-						price = "$15.30",
-						quantity = 2
-					)
-					Div()
+				})
+				*/
 
-				}
-				item{
-					CartItem(
-						imageUrl = "http://kasimadalan.pe.hu/yemekler/resimler/ayran.png", // Example image URL
-						itemName = "Red n hot pizza",
-						description = "Spicy chicken, beef",
-						price = "$15.30",
-						quantity = 2
-					)
-					Div()
+
 
 				}
 
@@ -165,7 +160,7 @@ fun Sepet() {
 
 	}
 
-}
+
 
 @Composable
 fun CartItem(imageUrl: String, itemName: String, description: String, price: String, quantity: Int) {

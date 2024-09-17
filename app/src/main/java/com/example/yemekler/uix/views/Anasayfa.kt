@@ -55,6 +55,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
@@ -82,7 +83,7 @@ import com.skydoves.landscapist.glide.GlideImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
+fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewModel)
 {
 	val activity = (LocalContext.current as Activity)
 	val yemekTurleri = remember { mutableListOf<yemekTurleri>() }
@@ -112,7 +113,8 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 	yemekler.add(yemek1)
 	yemekler.add(yemek2)
 
-	val tumYemeklerListe = anasayfaViewModel.tumYemeklerListesi.observeAsState(initial = emptyList())
+	val tumYemeklerListe =
+		anasayfaViewModel.tumYemeklerListesi.observeAsState(initial = emptyList())
 	LaunchedEffect(key1 = true) {
 		anasayfaViewModel.tumYemekleriGetir()
 
@@ -120,7 +122,7 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 
 
 
-	Scaffold(bottomBar = { BottomBar() } ,
+	Scaffold(bottomBar = { BottomBar(navController) } ,
 		topBar = { topBar() }
 
 
@@ -155,11 +157,11 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 						horizontalArrangement = Arrangement.SpaceBetween ,
 						modifier = Modifier
 
-							.padding(start = 30.dp, end = 0.dp)
-							.background(Color(0xFFFCFCFD), RoundedCornerShape(12.dp))
+							.padding(start = 30.dp , end = 0.dp)
+							.background(Color(0xFFFCFCFD) , RoundedCornerShape(12.dp))
 							.border(
-								1.dp,
-								shape = RoundedCornerShape(12.dp),
+								1.dp ,
+								shape = RoundedCornerShape(12.dp) ,
 								color = Color(0xFFEFEFEF)
 							)
 							.width(280.dp)
@@ -211,7 +213,7 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 						painter = painter1 ,
 						contentDescription = "" ,
 						modifier = Modifier
-							.size(120.dp, 50.dp)
+							.size(120.dp , 50.dp)
 							.padding(end = 10.dp)
 					)
 
@@ -272,7 +274,7 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 						var resim = restoran[it]
 						Image(
 							modifier = Modifier
-								.size(330.dp, height = 280.dp)
+								.size(330.dp , height = 280.dp)
 								.clipToBounds()
 								.padding(end = 0.dp) ,
 							painter = painterResource(
@@ -303,15 +305,39 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 			item {
 				Spacer(modifier = Modifier.height(10.dp))
 
-				LazyVerticalGrid(
-					columns = GridCells.Fixed(2) , modifier = Modifier
+				LazyColumn(
+					modifier = Modifier
 						.padding(end = 30.dp)
-						.height((100 * yemekler.count()).dp)
+						.height((100 * tumYemeklerListe.value.size).dp)
 				) {
+					val itemCount = tumYemeklerListe.value.size
 
-					items(tumYemeklerListe.value.size , itemContent = {
-						var t = tumYemeklerListe.value[it]
-						FoodCard(t)
+
+					items(itemCount / 2 + itemCount % 2 , itemContent = {
+						Row(modifier = Modifier.fillMaxWidth()) {
+							// İlk öğe
+							val firstItemIndex = it * 2
+
+							FoodCard(tumYemeklerListe.value[firstItemIndex] , onClick = {
+								val yemekJson =
+									Gson().toJson(tumYemeklerListe.value[firstItemIndex])
+								navController.navigate("detaySayfa/$yemekJson")
+							})
+
+							// İkinci öğe varsa, onu ekliyoruz
+							if (firstItemIndex + 1 < itemCount)
+							{
+								FoodCard(tumYemeklerListe.value[firstItemIndex + 1] , onClick = {
+									val yemekJson =
+										Gson().toJson(tumYemeklerListe.value[firstItemIndex+1])
+									navController.navigate("detaySayfa/$yemekJson")
+								})
+							}
+							else
+							{
+								Spacer(modifier = Modifier.weight(1f)) // Eğer ikinci öğe yoksa boş alan bırakıyoruz
+							}
+						}
 
 
 					})
@@ -329,7 +355,7 @@ fun Anasayfa(anasayfaViewModel: AnasayfaViewModel)
 
 
 @Composable
-fun BottomBar()
+fun BottomBar(navController : NavController)
 {
 
 
@@ -338,7 +364,7 @@ fun BottomBar()
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
-					.padding(start = 10.dp, end = 10.dp) ,
+					.padding(start = 10.dp , end = 10.dp) ,
 				verticalAlignment = Alignment.CenterVertically ,
 				horizontalArrangement = Arrangement.SpaceBetween
 			) {
@@ -351,9 +377,9 @@ fun BottomBar()
 					)
 
 				}
-				IconButton(onClick = { /*TODO*/ }) {
+				IconButton(onClick = { navController.navigate("sepet")}) {
 					Icon(
-						painter = painterResource(id = R.drawable.home) ,
+						painter = painterResource(id = R.drawable.baseline_shopping_basket_24) ,
 						contentDescription = "" ,
 						modifier = Modifier.size(36.dp)
 					)
@@ -446,10 +472,10 @@ fun FoodCategoryCard(name : String , svgPath : String , isSelected : Boolean , o
 
 	Column(
 		modifier = Modifier
-			.padding(start = 10.dp, end = 10.dp)
+			.padding(start = 10.dp , end = 10.dp)
 			.width(70.dp)
 			.height(120.dp)
-			.background(backgroundColor, RoundedCornerShape(80.dp))
+			.background(backgroundColor , RoundedCornerShape(80.dp))
 			.padding(vertical = 4.dp)
 			.clickable {
 				onClick.invoke()
@@ -486,14 +512,15 @@ fun FoodCategoryCard(name : String , svgPath : String , isSelected : Boolean , o
 }
 
 @Composable
-fun FoodCard(y: yemek)
+fun FoodCard(y : yemek , onClick : () -> Unit)
 {
 	Card(
 		shape = RoundedCornerShape(16.dp) ,
 		modifier = Modifier
-			.padding(start = 30.dp, top = 0.dp)
+			.padding(start = 30.dp , top = 0.dp , bottom = 10.dp)
 			.height(200.dp)
-			.width(160.dp) ,
+			.width(160.dp)
+			.clickable(onClick = onClick) ,
 		elevation = 4.dp
 	) {
 		Column(
@@ -511,7 +538,11 @@ fun FoodCard(y: yemek)
 			) {
 				// Arka plan görseli
 				val url = "http://kasimadalan.pe.hu/yemekler/resimler/${y.yemek_resim_adi}"
-				GlideImage(imageModel = url,modifier = Modifier.align(Alignment.Center),contentScale = ContentScale.Crop ,)
+				GlideImage(
+					imageModel = url ,
+					modifier = Modifier.align(Alignment.Center) ,
+					contentScale = ContentScale.Crop ,
+				)
 
 
 				// Fiyat etiketi
@@ -523,11 +554,11 @@ fun FoodCard(y: yemek)
 						.align(Alignment.TopStart) // Sol üstte hizala
 						.padding(8.dp)
 						.background(
-							color = Color.Transparent,
+							color = Color.Transparent ,
 							shape = RoundedCornerShape(12.dp)
 						)
-						.padding(horizontal = 8.dp, vertical = 4.dp)
-						.border(1.dp, Color.LightGray, RoundedCornerShape(10.dp))
+						.padding(horizontal = 8.dp , vertical = 4.dp)
+						.border(1.dp , Color.LightGray , RoundedCornerShape(10.dp))
 				)
 
 				// Favori butonu
@@ -548,11 +579,11 @@ fun FoodCard(y: yemek)
 						.align(Alignment.BottomStart) // Sol altta hizala
 						.padding(start = 18.dp)
 						.background(
-							color = Color.Transparent,
+							color = Color.Transparent ,
 							shape = RoundedCornerShape(12.dp)
 						)
-						.padding(horizontal = 8.dp, vertical = 4.dp)
-						.border(1.dp, Color.LightGray, RoundedCornerShape(10.dp))
+						.padding(horizontal = 8.dp , vertical = 4.dp)
+						.border(1.dp , Color.LightGray , RoundedCornerShape(10.dp))
 				) {
 					Icon(
 						imageVector = Icons.Default.Star ,
