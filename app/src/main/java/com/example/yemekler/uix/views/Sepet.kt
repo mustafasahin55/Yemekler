@@ -40,8 +40,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +49,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
@@ -63,7 +62,7 @@ import com.example.yemekler.ui.theme.orange80
 import com.example.yemekler.uix.viewModels.SepetViewModel
 
 @Composable
-fun Sepet(sepetViewModel : SepetViewModel)
+fun Sepet(sepetViewModel : SepetViewModel , navController : NavHostController)
 {
 
 	var sepetYemeklerListe =
@@ -76,7 +75,7 @@ fun Sepet(sepetViewModel : SepetViewModel)
 	}
 	val toplam = sepetYemeklerListe.value.sumOf { it.yemek_fiyat * it.yemek_siparis_adet }
 
-	Scaffold(topBar = { topBarSepet() }) { paddingValues ->
+	Scaffold(topBar = { topBarSepet(navController) }) { paddingValues ->
 
 		Column(
 			modifier = Modifier
@@ -188,7 +187,7 @@ fun CartItem(
 
 		Spacer(modifier = Modifier.width(16.dp))
 		Box(modifier = Modifier.fillMaxWidth()) {
-			Column(
+			Column(modifier = Modifier
 
 			) {
 				Text(text = itemName , fontWeight = FontWeight.Bold)
@@ -387,7 +386,7 @@ fun Div()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun topBarSepet()
+fun topBarSepet(navController : NavHostController)
 {
 	TopAppBar(title = {
 
@@ -397,7 +396,7 @@ fun topBarSepet()
 
 			modifier = Modifier.fillMaxWidth()
 		) {
-			IconButton(onClick = { /* Handle back navigation */ }) {
+			IconButton(onClick = { navController.popBackStack() }) {
 				Icon(
 					imageVector = Icons.Default.ArrowBack ,
 					contentDescription = "Back"
@@ -410,6 +409,7 @@ fun topBarSepet()
 				modifier = Modifier
 					.weight(1f)
 					.padding(start = 8.dp)
+
 			)
 		}
 

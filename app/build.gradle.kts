@@ -90,4 +90,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.5.0")
 
+    implementation ("com.airbnb.android:lottie-compose:6.0.0")
+
+
 }

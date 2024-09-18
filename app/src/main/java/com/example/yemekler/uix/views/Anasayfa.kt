@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -27,13 +25,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomAppBarState
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -41,6 +35,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -60,24 +56,20 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.example.yemekler.R
+import com.example.yemekler.data.entity.sYemekler
 import com.example.yemekler.data.entity.yemek
 import com.example.yemekler.data.entity.yemekTurleri
-import com.example.yemekler.ui.theme.dark
 import com.example.yemekler.ui.theme.dark20
 import com.example.yemekler.ui.theme.dark50
 import com.example.yemekler.ui.theme.dark80
-import com.example.yemekler.ui.theme.gray
-import com.example.yemekler.ui.theme.gray20
-import com.example.yemekler.ui.theme.gray50
 import com.example.yemekler.ui.theme.gray80
 import com.example.yemekler.ui.theme.mid
 import com.example.yemekler.ui.theme.orange
+import com.example.yemekler.ui.theme.orange50
+import com.example.yemekler.ui.theme.orange80
 import com.example.yemekler.ui.theme.regular
 import com.example.yemekler.ui.theme.semiBold
 import com.example.yemekler.uix.viewModels.AnasayfaViewModel
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
 import com.google.gson.Gson
 import com.skydoves.landscapist.glide.GlideImage
 
@@ -85,6 +77,15 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewModel)
 {
+	var sepetYemeklerListe =
+		anasayfaViewModel.sepetYemeklerListesi.observeAsState(initial = emptyList())
+
+	LaunchedEffect(true) {
+		anasayfaViewModel.sepetiGetir("mustafa")
+
+
+	}
+
 	val activity = (LocalContext.current as Activity)
 	val yemekTurleri = remember { mutableListOf<yemekTurleri>() }
 	var y1 = yemekTurleri(1 , "Burger" , "burger")
@@ -122,7 +123,7 @@ fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewMod
 
 
 
-	Scaffold(bottomBar = { BottomBar(navController) } ,
+	Scaffold(bottomBar = { BottomBar(navController,sepetYemeklerListe) } ,
 		topBar = { topBar() }
 
 
@@ -329,7 +330,7 @@ fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewMod
 							{
 								FoodCard(tumYemeklerListe.value[firstItemIndex + 1] , onClick = {
 									val yemekJson =
-										Gson().toJson(tumYemeklerListe.value[firstItemIndex+1])
+										Gson().toJson(tumYemeklerListe.value[firstItemIndex + 1])
 									navController.navigate("detaySayfa/$yemekJson")
 								})
 							}
@@ -355,8 +356,10 @@ fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewMod
 
 
 @Composable
-fun BottomBar(navController : NavController)
+fun BottomBar(navController : NavController , sepetYemeklerListe : State<List<sYemekler>>)
 {
+	val bottomBarSecim = remember { mutableStateOf(0) }
+
 
 
 	BottomAppBar(modifier = Modifier.height(70.dp) ,
@@ -364,48 +367,86 @@ fun BottomBar(navController : NavController)
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
+					.background(Color.Transparent)
 					.padding(start = 10.dp , end = 10.dp) ,
 				verticalAlignment = Alignment.CenterVertically ,
 				horizontalArrangement = Arrangement.SpaceBetween
 			) {
 
-				IconButton(onClick = { /*TODO*/ }) {
+				IconButton(onClick = { bottomBarSecim.value = 0 }) {
 					Icon(
 						painter = painterResource(id = R.drawable.home) ,
 						contentDescription = "" ,
-						modifier = Modifier.size(36.dp)
+						modifier = Modifier.size(24.dp) ,
+						tint = if (bottomBarSecim.value == 0) orange80 else dark20
 					)
 
 				}
-				IconButton(onClick = { navController.navigate("sepet")}) {
+				IconButton(onClick = { }) {
 					Icon(
-						painter = painterResource(id = R.drawable.baseline_shopping_basket_24) ,
+						painter = painterResource(id = R.drawable.konum) ,
 						contentDescription = "" ,
-						modifier = Modifier.size(36.dp)
+						modifier = Modifier.size(24.dp) ,
+						tint = dark20
+					)
+
+				}
+
+				Box(modifier = Modifier) {
+					IconButton(onClick = {
+						navController.navigate("sepet")
+						bottomBarSecim.value = 2
+					}) {
+						Icon(
+							painter = painterResource(id = R.drawable.sepet) ,
+							contentDescription = "" ,
+							modifier = Modifier
+								.size(24.dp)
+								.align(Alignment.Center) ,
+							tint = if (bottomBarSecim.value == 2) orange80 else dark20
+						)
+
+					}
+
+					Box(
+						modifier = Modifier
+							.size(20.dp)
+							.align(Alignment.TopEnd) // Sağ üst köşeye hizala
+							.background(
+								Color(0xFFFFC107) ,
+								RoundedCornerShape(7.dp)
+							) , // Arka plan sarı ve yuvarlak
+						contentAlignment = Alignment.Center
+					) {
+						Text(
+							text = "${sepetYemeklerListe.value.size}" ,
+							color = Color.White ,
+							fontSize = 12.sp ,
+							fontWeight = FontWeight.Bold,
+							lineHeight = 12.sp,
+							modifier = Modifier.padding(bottom = 0.dp)
+						)
+					}
+				}
+
+
+
+				IconButton(onClick = { /*TODO*/ }) {
+					Icon(
+						painter = painterResource(id = R.drawable.fav) ,
+						contentDescription = "" ,
+						modifier = Modifier.size(24.dp) ,
+						tint = dark20
+
 					)
 
 				}
 				IconButton(onClick = { /*TODO*/ }) {
 					Icon(
-						painter = painterResource(id = R.drawable.home) ,
+						painter = painterResource(id = R.drawable.bildirim) ,
 						contentDescription = "" ,
-						modifier = Modifier.size(36.dp)
-					)
-
-				}
-				IconButton(onClick = { /*TODO*/ }) {
-					Icon(
-						painter = painterResource(id = R.drawable.home) ,
-						contentDescription = "" ,
-						modifier = Modifier.size(36.dp)
-					)
-
-				}
-				IconButton(onClick = { /*TODO*/ }) {
-					Icon(
-						painter = painterResource(id = R.drawable.home) ,
-						contentDescription = "" ,
-						modifier = Modifier.size(36.dp)
+						modifier = Modifier.size(24.dp) ,
+						tint = dark20
 					)
 
 				}
@@ -533,7 +574,7 @@ fun FoodCard(y : yemek , onClick : () -> Unit)
 				modifier = Modifier
 					.size(150.dp) // Kartın boyutunu ayarlayabilirsin
 					.clip(RoundedCornerShape(16.dp)) // Köşeleri yuvarlama
-					.background(Color.Transparent) // Arka plan rengi,
+					.background(Color.White) // Arka plan rengi,
 
 			) {
 				// Arka plan görseli
@@ -547,29 +588,31 @@ fun FoodCard(y : yemek , onClick : () -> Unit)
 
 				// Fiyat etiketi
 				Text(
-					text = "${y.yemek_fiyat}" ,
-					color = Color.Red ,
+					text = "${y.yemek_fiyat}₺" ,
+					color = Color.White ,
 
 					modifier = Modifier
 						.align(Alignment.TopStart) // Sol üstte hizala
 						.padding(8.dp)
 						.background(
-							color = Color.Transparent ,
-							shape = RoundedCornerShape(12.dp)
+							color = orange80 ,
+							shape = RoundedCornerShape(2.dp)
 						)
-						.padding(horizontal = 8.dp , vertical = 4.dp)
-						.border(1.dp , Color.LightGray , RoundedCornerShape(10.dp))
+						.padding(horizontal = 0.dp , vertical = 0.dp)
+						.border(0.dp , Color.Transparent , RoundedCornerShape(10.dp))
+						.shadow(8.dp , CircleShape)
 				)
 
 				// Favori butonu
 				Icon(
 					imageVector = Icons.Default.FavoriteBorder ,
 					contentDescription = "Favorite" ,
-					tint = Color.Red ,
+					tint = dark50 ,
 					modifier = Modifier
 						.align(Alignment.TopEnd) // Sağ üstte hizala
 						.padding(8.dp)
 						.size(24.dp)
+						.clickable { }
 				)
 
 				// Puanlama kısmı
@@ -577,13 +620,14 @@ fun FoodCard(y : yemek , onClick : () -> Unit)
 					verticalAlignment = Alignment.CenterVertically ,
 					modifier = Modifier
 						.align(Alignment.BottomStart) // Sol altta hizala
-						.padding(start = 18.dp)
+						.padding(start = 28.dp)
 						.background(
-							color = Color.Transparent ,
+							color = orange50 ,
 							shape = RoundedCornerShape(12.dp)
 						)
-						.padding(horizontal = 8.dp , vertical = 4.dp)
-						.border(1.dp , Color.LightGray , RoundedCornerShape(10.dp))
+						.shadow(8.dp , CircleShape)
+						.padding(horizontal = 0.dp , vertical = 0.dp)
+						.border(0.dp , Color.Transparent , RoundedCornerShape(10.dp))
 				) {
 					Icon(
 						imageVector = Icons.Default.Star ,
@@ -592,13 +636,21 @@ fun FoodCard(y : yemek , onClick : () -> Unit)
 						modifier = Modifier.size(16.dp)
 					)
 					Spacer(modifier = Modifier.width(4.dp))
-					Text(text = "4.5")
+					Text(text = "4.5" , color = Color.White)
 					Spacer(modifier = Modifier.width(4.dp))
-					Text(text = "(25+)")
+					Text(text = "(25+)" , color = Color.White)
 				}
 			}
-
-			Text(text = "${y.yemek_adi}")
+			Spacer(modifier = Modifier.height(4.dp))
+			Text(
+				text = y.yemek_adi , color = Color.White , modifier = Modifier
+					.padding()
+					.background(
+						color = orange ,
+						shape = RoundedCornerShape(5.dp)
+					)
+					.shadow(8.dp , CircleShape)
+			)
 
 		}
 	}

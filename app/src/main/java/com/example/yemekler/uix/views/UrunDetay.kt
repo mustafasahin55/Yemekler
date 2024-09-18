@@ -17,62 +17,65 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.RadioButton
-import androidx.compose.material.RadioButtonDefaults
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
-import com.example.yemekler.R
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.yemekler.data.entity.yemek
 import com.example.yemekler.ui.theme.dark50
 import com.example.yemekler.ui.theme.dark80
-import com.example.yemekler.ui.theme.gray
-import com.example.yemekler.ui.theme.gray20
 import com.example.yemekler.ui.theme.gray50
 import com.example.yemekler.ui.theme.gray80
 import com.example.yemekler.ui.theme.mid
 import com.example.yemekler.ui.theme.orange
-import com.example.yemekler.ui.theme.regular
 import com.example.yemekler.ui.theme.semiBold
-import com.example.yemekler.uix.viewModels.SepetViewModel
 import com.example.yemekler.uix.viewModels.UrunDetayViewModel
 import com.skydoves.landscapist.glide.GlideImage
 
 
 @Composable
-fun UrunDetay(y:yemek,urunDetayViewModel : UrunDetayViewModel)
+fun UrunDetay(
+	y : yemek ,
+	urunDetayViewModel : UrunDetayViewModel ,
+	navController : NavHostController
+)
 {
+
 	var adet = remember {
 		mutableIntStateOf(1)
 	}
+
+
+
 	Scaffold { paddingValues ->
 
 
@@ -92,7 +95,7 @@ fun UrunDetay(y:yemek,urunDetayViewModel : UrunDetayViewModel)
 					.size(180.dp),contentScale = ContentScale.Crop ,)
 				// Sol üst köşeye geri butonu
 				IconButton(
-					onClick = { /* Geri butonuna tıklama işlemi */ } ,
+					onClick = { navController.popBackStack() } ,
 					modifier = Modifier
 						.align(Alignment.TopStart)
 						.padding(8.dp)
@@ -311,6 +314,8 @@ fun AddOnOption(name : String , price : String , isSelected : Boolean)
 @Composable
 fun AddToCartButton(y:yemek,urunDetayViewModel : UrunDetayViewModel,adet: MutableState<Int>)
 {
+
+
 	Button(
 		onClick = {
 

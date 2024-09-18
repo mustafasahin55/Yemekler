@@ -33,12 +33,12 @@ fun SayfaGecisleri(anasayfaViewModel : AnasayfaViewModel,urunDetayViewModel : Ur
 		)){
 			val json = it.arguments?.getString("yemek")
 			val n = Gson().fromJson(json, yemek::class.java)
-			UrunDetay(n,urunDetayViewModel)
+			UrunDetay(n,urunDetayViewModel,navController)
 
 		}
 
 		composable("sepet"){
-			Sepet(sepetViewModel)
+			Sepet(sepetViewModel,navController)
 		}
 
 	}
