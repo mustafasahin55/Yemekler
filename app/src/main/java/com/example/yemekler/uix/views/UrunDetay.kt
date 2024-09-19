@@ -30,11 +30,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,8 +45,6 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.yemekler.data.entity.yemek
 import com.example.yemekler.ui.theme.dark50
 import com.example.yemekler.ui.theme.dark80
@@ -90,9 +85,13 @@ fun UrunDetay(
 
 				val url = "http://kasimadalan.pe.hu/yemekler/resimler/${y.yemek_resim_adi}"
 
-				GlideImage(imageModel = url,modifier = Modifier
-					.align(Alignment.Center)
-					.size(180.dp),contentScale = ContentScale.Crop ,)
+				GlideImage(
+					imageModel = url ,
+					modifier = Modifier
+						.align(Alignment.Center)
+						.size(180.dp) ,
+					contentScale = ContentScale.Crop ,
+				)
 				// Sol üst köşeye geri butonu
 				IconButton(
 					onClick = { navController.popBackStack() } ,
@@ -176,7 +175,7 @@ fun UrunDetay(
 				modifier = Modifier.fillMaxWidth()
 			) {
 				Text(
-					text = "${y.yemek_fiyat }₺" ,
+					text = "${y.yemek_fiyat}₺" ,
 
 					color = orange ,
 					fontFamily = semiBold ,
@@ -214,14 +213,15 @@ fun UrunDetay(
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			AddToCartButton(y,urunDetayViewModel,adet)
+			AddToCartButton(y , urunDetayViewModel , adet , navController)
 		}
 	}
 }
 
 @Composable
-fun QuantitySelector(adet: MutableState<Int>)
-{   var a = adet
+fun QuantitySelector(adet : MutableState<Int>)
+{
+	var a = adet
 	Row(
 		verticalAlignment = Alignment.CenterVertically
 	) {
@@ -242,11 +242,15 @@ fun QuantitySelector(adet: MutableState<Int>)
 		Image(
 			painter = painter2 ,
 			contentDescription = "" ,
-			modifier = Modifier.size(30.dp)
+			modifier = Modifier
+				.size(30.dp)
 				.clickable {
-					if(adet.value>1){
+					if (adet.value > 1)
+					{
 						adet.value -= 1
-					}else{
+					}
+					else
+					{
 						adet.value = 1
 					}
 
@@ -256,7 +260,8 @@ fun QuantitySelector(adet: MutableState<Int>)
 		Image(
 			painter = painter ,
 			contentDescription = "" ,
-			modifier = Modifier.size(30.dp)
+			modifier = Modifier
+				.size(30.dp)
 				.clickable {
 					adet.value += 1
 
@@ -312,20 +317,26 @@ fun AddOnOption(name : String , price : String , isSelected : Boolean)
 }
 
 @Composable
-fun AddToCartButton(y:yemek,urunDetayViewModel : UrunDetayViewModel,adet: MutableState<Int>)
+fun AddToCartButton(
+	y : yemek ,
+	urunDetayViewModel : UrunDetayViewModel ,
+	adet : MutableState<Int> ,
+	navController : NavHostController
+)
 {
 
 
 	Button(
 		onClick = {
-
-
-
-			urunDetayViewModel.sepeteEkle(y.yemek_adi,y.yemek_resim_adi,y.yemek_fiyat,adet.value,"mustafa")
-
-
-
-
+			urunDetayViewModel.sepeteEkle(
+				y.yemek_adi ,
+				y.yemek_resim_adi ,
+				y.yemek_fiyat ,
+				adet.value ,
+				"mustafa"
+			)
+			navController.navigate("anasayfa")
+			urunDetayViewModel.sepetiGetir("mustafa")
 
 		} ,
 		shape = RoundedCornerShape(36.dp) , // Yuvarlak kenarlar

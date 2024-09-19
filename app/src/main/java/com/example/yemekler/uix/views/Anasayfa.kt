@@ -1,6 +1,10 @@
 package com.example.yemekler.uix.views
 
+import java.io.File
+
 import android.app.Activity
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomAppBar
@@ -36,14 +41,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -77,6 +87,11 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewModel)
 {
+	var isFocused by remember { mutableStateOf(false) }
+
+
+	val focusRequester = remember { FocusRequester() }
+
 	var sepetYemeklerListe =
 		anasayfaViewModel.sepetYemeklerListesi.observeAsState(initial = emptyList())
 
@@ -85,6 +100,7 @@ fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewMod
 
 
 	}
+
 
 	val activity = (LocalContext.current as Activity)
 	val yemekTurleri = remember { mutableListOf<yemekTurleri>() }
@@ -123,7 +139,7 @@ fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewMod
 
 
 
-	Scaffold(bottomBar = { BottomBar(navController,sepetYemeklerListe) } ,
+	Scaffold(bottomBar = { BottomBar(navController , sepetYemeklerListe) } ,
 		topBar = { topBar() }
 
 
@@ -133,6 +149,7 @@ fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewMod
 				.fillMaxSize()
 				.padding(paddingValues)
 		) {
+
 
 			item {
 				Spacer(modifier = Modifier.height(10.dp))
@@ -187,7 +204,11 @@ fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewMod
 									text = "Find for food or restaurant.." , fontSize = 12.sp
 								)
 							} ,
-							modifier = Modifier ,
+							modifier = Modifier
+								.focusRequester(focusRequester)
+								.onFocusChanged { focusState ->
+									isFocused = focusState.isFocused
+								} ,
 
 							colors = TextFieldDefaults.textFieldColors(
 								containerColor = Color.Transparent ,
@@ -222,130 +243,201 @@ fun Anasayfa(navController : NavController , anasayfaViewModel : AnasayfaViewMod
 
 			}
 
-			item {
-				LazyRow(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(16.dp)
-				) {
-					items(yemekTurleri.size) {
-						var y = yemekTurleri[it]
-						FoodCategoryCard(
-							name = y.yemekTurAdi ,
-							svgPath = y.yemekTurResim ,
-							isSelected = selectedIndex.value == y.id ,
-							onClick = { selectedIndex.value = y.id })
+			if (isFocused == false)
+			{
+
+				item {
+					LazyRow(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(16.dp)
+					) {
+						items(yemekTurleri.size) {
+							var y = yemekTurleri[it]
+							FoodCategoryCard(
+								name = y.yemekTurAdi ,
+								svgPath = y.yemekTurResim ,
+								isSelected = selectedIndex.value == y.id ,
+								onClick = { selectedIndex.value = y.id })
+						}
 					}
+
+
 				}
+				item {
+					Row(
+						modifier = Modifier.padding(start = 30.dp) ,
+						horizontalArrangement = Arrangement.SpaceBetween ,
+						verticalAlignment = Alignment.CenterVertically
+					) {
 
+						Text(
+							text = "Featured Restaurants" ,
+							lineHeight = 18.sp ,
+							color = dark80 ,
+							fontSize = 18.sp ,
+							fontFamily = semiBold
+						)
+						Text(
+							text = "View All >" ,
+							lineHeight = 14.sp ,
+							color = orange ,
+							fontSize = 14.sp ,
+							fontFamily = semiBold ,
+							modifier = Modifier.padding(start = 90.dp)
+						)
+					}
 
-			}
-			item {
-				Row(
-					modifier = Modifier.padding(start = 30.dp) ,
-					horizontalArrangement = Arrangement.SpaceBetween ,
-					verticalAlignment = Alignment.CenterVertically
-				) {
+				}
+				item {
+					LazyRow(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(start = 15.dp)
+					) {
+						items(restoran.size) {
+							var resim = restoran[it]
+							Image(
+								modifier = Modifier
+									.size(330.dp , height = 280.dp)
+									.clipToBounds()
+									.padding(end = 0.dp) ,
+								painter = painterResource(
+									id = activity.resources.getIdentifier(
+										resim ,
+										"drawable" ,
+										activity.packageName
+									)
+								) ,
+								contentDescription = ""
+							)
 
+						}
+
+					}
 					Text(
-						text = "Featured Restaurants" ,
+						text = "Popular Items" ,
 						lineHeight = 18.sp ,
 						color = dark80 ,
 						fontSize = 18.sp ,
-						fontFamily = semiBold
-					)
-					Text(
-						text = "View All >" ,
-						lineHeight = 14.sp ,
-						color = orange ,
-						fontSize = 14.sp ,
 						fontFamily = semiBold ,
-						modifier = Modifier.padding(start = 90.dp)
+						modifier = Modifier.padding(start = 30.dp)
 					)
+
+
 				}
 
-			}
-			item {
-				LazyRow(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(start = 15.dp)
-				) {
-					items(restoran.size) {
-						var resim = restoran[it]
-						Image(
-							modifier = Modifier
-								.size(330.dp , height = 280.dp)
-								.clipToBounds()
-								.padding(end = 0.dp) ,
-							painter = painterResource(
-								id = activity.resources.getIdentifier(
-									resim ,
-									"drawable" ,
-									activity.packageName
-								)
-							) ,
-							contentDescription = ""
-						)
+				item {
+					Spacer(modifier = Modifier.height(10.dp))
 
-					}
-
-				}
-				Text(
-					text = "Popular Items" ,
-					lineHeight = 18.sp ,
-					color = dark80 ,
-					fontSize = 18.sp ,
-					fontFamily = semiBold ,
-					modifier = Modifier.padding(start = 30.dp)
-				)
+					LazyColumn(
+						modifier = Modifier
+							.padding(end = 30.dp)
+							.height((100 * tumYemeklerListe.value.size).dp)
+					) {
+						val itemCount = tumYemeklerListe.value.size
 
 
-			}
+						items(itemCount / 2 + itemCount % 2 , itemContent = {
+							Row(modifier = Modifier.fillMaxWidth()) {
+								// İlk öğe
+								val firstItemIndex = it * 2
 
-			item {
-				Spacer(modifier = Modifier.height(10.dp))
-
-				LazyColumn(
-					modifier = Modifier
-						.padding(end = 30.dp)
-						.height((100 * tumYemeklerListe.value.size).dp)
-				) {
-					val itemCount = tumYemeklerListe.value.size
-
-
-					items(itemCount / 2 + itemCount % 2 , itemContent = {
-						Row(modifier = Modifier.fillMaxWidth()) {
-							// İlk öğe
-							val firstItemIndex = it * 2
-
-							FoodCard(tumYemeklerListe.value[firstItemIndex] , onClick = {
-								val yemekJson =
-									Gson().toJson(tumYemeklerListe.value[firstItemIndex])
-								navController.navigate("detaySayfa/$yemekJson")
-							})
-
-							// İkinci öğe varsa, onu ekliyoruz
-							if (firstItemIndex + 1 < itemCount)
-							{
-								FoodCard(tumYemeklerListe.value[firstItemIndex + 1] , onClick = {
+								FoodCard(tumYemeklerListe.value[firstItemIndex] , onClick = {
 									val yemekJson =
-										Gson().toJson(tumYemeklerListe.value[firstItemIndex + 1])
+										Gson().toJson(tumYemeklerListe.value[firstItemIndex])
 									navController.navigate("detaySayfa/$yemekJson")
 								})
+
+								// İkinci öğe varsa, onu ekliyoruz
+								if (firstItemIndex + 1 < itemCount)
+								{
+									FoodCard(
+										tumYemeklerListe.value[firstItemIndex + 1] ,
+										onClick = {
+											val yemekJson =
+												Gson().toJson(tumYemeklerListe.value[firstItemIndex + 1])
+											navController.navigate("detaySayfa/$yemekJson")
+										})
+								}
+								else
+								{
+									Spacer(modifier = Modifier.weight(1f)) // Eğer ikinci öğe yoksa boş alan bırakıyoruz
+								}
 							}
-							else
-							{
-								Spacer(modifier = Modifier.weight(1f)) // Eğer ikinci öğe yoksa boş alan bırakıyoruz
-							}
-						}
 
 
-					})
+						})
+					}
+
+
+				}
+			}
+			if (isFocused == true)
+			{
+
+				item {
+					Spacer(modifier = Modifier.height(10.dp))
+
+					LazyColumn(
+						modifier = Modifier
+							.padding(end = 30.dp)
+							.height((100 * tumYemeklerListe.value.size).dp)
+					) {
+						val itemCount = tumYemeklerListe.value.size
+
+
+						items(itemCount / 2 + itemCount % 2 , itemContent = {
+							Row(modifier = Modifier.fillMaxWidth()) {
+								// İlk öğe
+								val firstItemIndex = it * 2
+
+								if (tumYemeklerListe.value[firstItemIndex].yemek_adi.contains(
+										searchText.value
+									)
+								)
+								{
+									FoodCard(tumYemeklerListe.value[firstItemIndex] , onClick = {
+										val yemekJson =
+											Gson().toJson(tumYemeklerListe.value[firstItemIndex])
+										navController.navigate("detaySayfa/$yemekJson")
+									})
+								}
+
+
+								// İkinci öğe varsa, onu ekliyoruz
+								if (firstItemIndex + 1 < itemCount)
+								{
+									if (tumYemeklerListe.value[firstItemIndex + 1].yemek_adi.lowercase()
+											.contains(searchText.value.lowercase())
+									)
+									{
+
+										FoodCard(
+											tumYemeklerListe.value[firstItemIndex + 1] ,
+											onClick = {
+												val yemekJson =
+													Gson().toJson(tumYemeklerListe.value[firstItemIndex + 1])
+												navController.navigate("detaySayfa/$yemekJson")
+											})
+									}
+								}
+								else
+								{
+									Spacer(modifier = Modifier.weight(1f)) // Eğer ikinci öğe yoksa boş alan bırakıyoruz
+								}
+							}
+
+
+						})
+					}
+
+
 				}
 
 
 			}
+
 
 		}
 
@@ -422,8 +514,8 @@ fun BottomBar(navController : NavController , sepetYemeklerListe : State<List<sY
 							text = "${sepetYemeklerListe.value.size}" ,
 							color = Color.White ,
 							fontSize = 12.sp ,
-							fontWeight = FontWeight.Bold,
-							lineHeight = 12.sp,
+							fontWeight = FontWeight.Bold ,
+							lineHeight = 12.sp ,
 							modifier = Modifier.padding(bottom = 0.dp)
 						)
 					}
@@ -431,7 +523,7 @@ fun BottomBar(navController : NavController , sepetYemeklerListe : State<List<sY
 
 
 
-				IconButton(onClick = { /*TODO*/ }) {
+				IconButton(onClick = { navController.navigate("fav") }) {
 					Icon(
 						painter = painterResource(id = R.drawable.fav) ,
 						contentDescription = "" ,
@@ -555,6 +647,11 @@ fun FoodCategoryCard(name : String , svgPath : String , isSelected : Boolean , o
 @Composable
 fun FoodCard(y : yemek , onClick : () -> Unit)
 {
+	val context = LocalContext.current
+	var isFavorite by remember { mutableStateOf(readFromFile(context , y.yemek_adi)) }
+	LaunchedEffect(isFavorite) {
+		isFavorite = readFromFile(context , y.yemek_adi)
+	}
 	Card(
 		shape = RoundedCornerShape(16.dp) ,
 		modifier = Modifier
@@ -605,14 +702,28 @@ fun FoodCard(y : yemek , onClick : () -> Unit)
 
 				// Favori butonu
 				Icon(
-					imageVector = Icons.Default.FavoriteBorder ,
+					imageVector = if (readFromFile(
+							context ,
+							y.yemek_adi
+						)
+					) Icons.Default.Favorite
+					else Icons.Default.FavoriteBorder ,
 					contentDescription = "Favorite" ,
-					tint = dark50 ,
+					tint = if(!isFavorite) dark50 else orange ,
 					modifier = Modifier
 						.align(Alignment.TopEnd) // Sağ üstte hizala
 						.padding(8.dp)
 						.size(24.dp)
-						.clickable { }
+						.clickable {
+							if (isFavorite) removeStringFromFile(
+								context ,
+								y.yemek_adi
+							)
+							else saveToFile(context , y.yemek_adi)
+							isFavorite = readFromFile(context , y.yemek_adi)
+
+
+						}
 				)
 
 				// Puanlama kısmı
@@ -653,5 +764,92 @@ fun FoodCard(y : yemek , onClick : () -> Unit)
 			)
 
 		}
+	}
+}
+
+fun saveToFile(context : Context , var1 : String)
+{
+	try
+	{
+		// Dosyanın kaydedileceği dizin ve dosya ismi
+		val fileName = "variables.txt"
+		val file = File(context.filesDir , fileName)
+		Log.e("fileSave" , "Dosya yolu: ${file.absolutePath}")
+		// Dosyaya yazma işlemi
+		file.appendText("Variable 1: $var1\n")
+
+		Log.e("fileSave" , "Veriler başarıyla kaydedildi!")
+	} catch (e : Exception)
+	{
+		e.printStackTrace()
+	}
+}
+
+fun readFromFile(context : Context , searchString : String) : Boolean
+{
+	return try
+	{
+		// Dosya ismi
+		val fileName = "variables.txt"
+		val file = File(context.filesDir , fileName)
+
+		// Dosyadan tüm içeriği oku
+		if (file.exists())
+		{
+			val fileContent = file.readText()
+
+			// Aranılan string dosya içeriğinde var mı kontrol et
+			if (fileContent.contains(searchString))
+			{
+				println("Aradığınız string dosyada bulundu: $searchString")
+				true
+			}
+			else
+			{
+				println("Aradığınız string dosyada bulunamadı: $searchString")
+				false
+			}
+		}
+		else
+		{
+			println("Dosya bulunamadı.")
+			false
+		}
+	} catch (e : Exception)
+	{
+		e.printStackTrace()
+		false
+	}
+}
+
+fun removeStringFromFile(context : Context , searchString : String)
+{
+	try
+	{
+		// Dosya ismi
+		val fileName = "variables.txt"
+		val file = File(context.filesDir , fileName)
+
+		// Dosya var mı kontrol et
+		if (file.exists())
+		{
+			// Dosyanın içeriğini oku
+			val fileContent = file.readText()
+
+			// Aradığımız stringi içeriğinden çıkar
+			val updatedContent = fileContent.replace(searchString , "")
+
+			// Güncellenmiş içeriği dosyaya tekrar yaz
+			file.writeText(updatedContent)
+
+			println("String dosyadan silindi: $searchString")
+		}
+		else
+		{
+			println("Dosya bulunamadı.")
+		}
+	} catch (e : Exception)
+	{
+		e.printStackTrace()
 	}
 }
